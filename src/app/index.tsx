@@ -1,8 +1,10 @@
 
 import { HomeHeader } from "@/components/HomeHeader";
-import { View, Text, Button } from "react-native";
+import { View, Text } from "react-native";
 import { Target } from "@/components/Target";
 import { List } from "@/components/List";
+import { Button } from "@/components/Button";
+import { router } from "expo-router";
 
 const summary = {
     total: "R$ 2.680,00",
@@ -41,10 +43,13 @@ export default function Index() {
             <List title="Minhas metas" 
                 data={targets}
                 keyExtractor={(item) => item.id} 
-                renderItem={({ item }) => <Target data={item} />}
+                renderItem={({ item }) => <Target data={item} onPress={() => router.navigate(`/in-progress/${item.id}`)} />}
                 emptyMessage="Nenhuma meta cadastrada. Clique em nova meta para cadastrar!" 
                 containerStyle={{ paddingHorizontal: 24 }}
             />
+            <View style={{ padding: 24, paddingBottom: 32}}>
+                <Button title={"Nova Meta"} isProcessing={false} onPress={() => router.navigate("/target")} />
+            </View>
         </View>
     );
 }
