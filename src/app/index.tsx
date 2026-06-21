@@ -1,6 +1,6 @@
 
 import { HomeHeader } from "@/components/HomeHeader";
-import { View, Text } from "react-native";
+import { View, StatusBar } from "react-native";
 import { Target } from "@/components/Target";
 import { List } from "@/components/List";
 import { Button } from "@/components/Button";
@@ -39,12 +39,13 @@ const targets = [
 export default function Index() {
     return (
         <View style={{ flex: 1 }}>
+            <StatusBar barStyle="light-content" />
             <HomeHeader data={summary} />
             <List title="Minhas metas" 
                 data={targets}
                 keyExtractor={(item) => item.id} 
                 renderItem={({ item }) => <Target data={item} onPress={() => router.navigate(`/in-progress/${item.id}`)} />}
-                emptyMessage="Nenhuma meta cadastrada. Clique em nova meta para cadastrar!" 
+                emptyMessage="Nenhuma meta cadastrada. Clique em nova meta para cadastrar!"
                 containerStyle={{ paddingHorizontal: 24 }}
             />
             <View style={{ padding: 24, paddingBottom: 32}}>
