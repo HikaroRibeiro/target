@@ -1,10 +1,14 @@
 
 import { HomeHeader } from "@/components/HomeHeader";
-import { View, StatusBar } from "react-native";
-import { Target } from "@/components/Target";
+import { View, StatusBar, Alert } from "react-native";
+import { Target, TargetProps } from "@/components/Target";
 import { List } from "@/components/List";
 import { Button } from "@/components/Button";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useTargetDatabase } from "@/database/useTargetDatabase";
+import { useCallback, useState } from "react";
+import { Loading } from "@/components/Loading";
+import { numberToCurrency } from "@/utils/numberToCurrency";
 
 const summary = {
     total: "R$ 2.680,00",
@@ -12,38 +16,51 @@ const summary = {
     output: { title: "Saídas", amount: "-R$ 501,00" },
 }
 
-const targets = [
-    { 
-        id: "1",
-        name: "Comprar uma cadeira ergonômica", 
-        percentage: "100%", 
-        current: "R$ 1.000,00", 
-        target: "R$ 1.000,00"
-    }, 
-    {
-        id: "2",
-        name: "Pagar conta de luz", 
-        percentage: "100%", 
-        current: "R$ 1.000,00", 
-        target: "R$ 1.000,00"
-    },
-    {
-        id: "3",
-        name: "Pagar conta de água", 
-        percentage: "100%", 
-        current: "R$ 1.000,00", 
-        target: "R$ 1.000,00"
-    }
-]
-
 export default function Index() {
+    const targetDatabase = useTargetDatabase();
+    const [isFetching, setIsFetching] = useState(true);
+    const [targets, setTargets] = useState<TargetProps[]>([]);
+
+    async function fetchTargets() {
+        try{
+            const response = await targetDatabase.listBySavedValue();
+            return response.map((item) => ({
+                id: String(item.id),
+                name: item.name,
+                target: numberToCurrency(item.amount),
+                current: numberToCurrency(item.current),
+                percentage: item.percentage.toFixed(0) + "%",
+            }))
+        }catch (error) {
+            Alert.alert("Meta", "Nao foi possivel cadastrar a meta.");
+            console.log(error);
+        }
+    }
+
+    async function fetchData() {
+        const targetDataPromise = fetchTargets();
+        const [targetData] = await Promise.all([targetDataPromise]);
+        setTargets(targetData ?? []);
+        setIsFetching(false);
+    }
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        },[])
+    )
+
+    if(isFetching) {
+        return <Loading />;
+    }
+
     return (
         <View style={{ flex: 1 }}>
             <StatusBar barStyle="light-content" />
             <HomeHeader data={summary} />
             <List title="Minhas metas" 
                 data={targets}
-                keyExtractor={(item) => item.id} 
+                keyExtractor={(item) => item.id || 'default-key'} 
                 renderItem={({ item }) => <Target data={item} onPress={() => router.navigate(`/in-progress/${item.id}`)} />}
                 emptyMessage="Nenhuma meta cadastrada. Clique em nova meta para cadastrar!"
                 containerStyle={{ paddingHorizontal: 24 }}

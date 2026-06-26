@@ -31,7 +31,8 @@
           ]
         }
       ],
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sqlite"
     ]
   }
 }
