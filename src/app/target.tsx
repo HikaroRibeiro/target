@@ -4,7 +4,7 @@ import { Button } from "@/components/Button";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Alert } from "react-native";
 import { CurrencyInput } from "@/components/CurrencyInput";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 
 export default function Target() {
@@ -40,10 +40,31 @@ export default function Target() {
             Alert.alert("Meta", "Nao foi possivel cadastrar a meta.");
         }
     }
+
+    async function fetchDetails(id: number) {
+        try{
+            const response = await targetDatabase.getTargetById(id);
+            if(response !== null) {
+                setName(response.name);
+                setAmount(response.amount);
+            }
+        }catch (error) {
+        if(error instanceof Error) {
+            Alert.alert("Meta", "Nao foi possivel carregar os detalhes da meta.");
+        }
+        }
+    }
+
+    useEffect(() => {
+        if(params.id) {
+            fetchDetails(Number(params.id));
+        }
+    }, [params.id]);
+
     return (
         <View style={{ flex: 1, padding: 24}}>
             <PageHeader 
-                title="Cadastrar meta" 
+                title="Meta" 
                 subtitle="Economize para alcançar a sua meta financeira." 
             />
             <View style={{ marginTop: 32, gap: 24 }}>
