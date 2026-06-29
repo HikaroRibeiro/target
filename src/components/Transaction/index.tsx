@@ -5,7 +5,7 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
 import { styles } from "./styles";
 import { colors } from "@/theme";
 
-export type TransctionProps = {
+export type TransactionProps = {
     id: string;
     value: string;
     date: string;
@@ -14,7 +14,7 @@ export type TransctionProps = {
 }
 
 type Props = {
-    data: TransctionProps
+    data: TransactionProps
     onRemove: () => void
 }
 

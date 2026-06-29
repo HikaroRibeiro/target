@@ -14,7 +14,7 @@ export default function Target() {
     const targetDatabase = useTargetDatabase();
 
     const params = useLocalSearchParams<{ id: string }>();
-    function handleSave() {
+    function save() {
         if(!name.trim() || amount <= 0) {
             return Alert.alert("Meta", "Informe o nome da meta e o valor alvo.");
         }
@@ -22,14 +22,25 @@ export default function Target() {
         setIsProcessing(true);
 
         if(params.id) {
+            update();
             setIsProcessing(false);
-            router.back();
         } else {
-            handleCreate();
+            create();
         }
     }
 
-    async function handleCreate() {
+    async function update() {
+        try {
+            await targetDatabase.update({ name, amount, id: Number(params.id) });
+            Alert.alert("Meta", "Meta atualizada com sucesso!", [
+                { text: "OK", onPress: () => router.back() }
+            ]);
+        }catch (error) {
+            Alert.alert("Meta", "Nao foi possivel atualizar a meta.");
+            setIsProcessing(false);
+        }
+    }
+    async function create() {
         try {
             await targetDatabase.create({ name, amount });
             
@@ -55,6 +66,31 @@ export default function Target() {
         }
     }
 
+    async function handleRemove(id: number) {
+        try {
+            setIsProcessing(true);
+            await targetDatabase.remove(id);
+            Alert.alert("Meta", "Meta removida com sucesso!", [
+                { text: "OK", onPress: () => router.replace("/") }
+            ]);
+            setIsProcessing(false);
+        }catch (error) {
+            Alert.alert("Meta", "Nao foi possivel remover a meta.");
+            console.log(error);
+        }
+    }
+
+    function remove() {
+        Alert.alert("Meta", "Deseja remover a meta?", [
+            { 
+                text: "Sim", onPress: () => handleRemove(Number(params.id)) 
+            },
+            {
+                text: "Cancelar", style: "cancel"
+            }
+        ]);
+    }
+
     useEffect(() => {
         if(params.id) {
             fetchDetails(Number(params.id));
@@ -65,7 +101,9 @@ export default function Target() {
         <View style={{ flex: 1, padding: 24}}>
             <PageHeader 
                 title="Meta" 
-                subtitle="Economize para alcançar a sua meta financeira." 
+                subtitle="Economize para alcançar a sua meta financeira."
+                rightButton={params.id ? {
+                    icon: "delete", onPress: () => remove()} : undefined}
             />
             <View style={{ marginTop: 32, gap: 24 }}>
                 <Input 
@@ -81,7 +119,7 @@ export default function Target() {
                 />
                 <Button 
                     title="Salvar" 
-                    onPress={handleSave} 
+                    onPress={save} 
                     isProcessing={isProcessing} 
                 />
             </View>
