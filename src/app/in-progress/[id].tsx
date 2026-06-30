@@ -1,4 +1,4 @@
-import { Alert, View } from "react-native";
+import { Alert, View, StatusBar } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Progress } from "@/components/Progress";
@@ -12,25 +12,10 @@ import { useCallback, useState } from "react";
 import { numberToCurrency } from "@/utils/numberToCurrency";
 import { Loading } from "@/components/Loading";
 import { TransactionTypes } from "@/utils/TransactionTypes";
-
-/* const transactions = [{
-  id: "1",
-  value: "R$ 1.580,00",
-  date: "01/01/2023",
-  description: "Investimentos em Renda Fixa",
-  type: TransactionTypes.INPUT
-}, 
-{
-  id: "2",
-  value: "R$ 580,00",
-  date: "01/01/2023",
-  description: "Compra de Apple Watch",
-  type: TransactionTypes.OUTPUT
-}]
-  */
+import dayjs from "dayjs";
 
  export default function InProgress() {
-   
+
    const [isProcessing, setIsProcessing] = useState(true);
    const [details, setDetails] = useState({
      name: "",
@@ -70,7 +55,7 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
       setTransactions(response.map((item) => ({
         id: String(item.id),
         value: numberToCurrency(item.amount),
-        date: String(item.created_at),
+        date: dayjs(item.created_at).format("DD/MM/YYYY [às] HH:mm"),
         description: item.observation,
         type: item.amount > 0 ? TransactionTypes.INPUT : TransactionTypes.OUTPUT
       })));
@@ -89,6 +74,31 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
     setIsProcessing(false);
   }
 
+  async function handleTransactionRemove(id: string) {
+        try {
+            setIsProcessing(true);
+            await transactionsDatabase.remove(Number(id));
+            Alert.alert("Transação", "Transação removida com sucesso!", [
+                { text: "OK", onPress: () => fetchData() }
+            ]);
+            setIsProcessing(false);
+        }catch (error) {
+            Alert.alert("Meta", "Nao foi possivel remover a meta.");
+            console.log(error);
+        }
+    }
+
+    function transactionRemove(id: string) {
+        Alert.alert("Transação", "Deseja remover a transação?", [
+            { 
+                text: "Sim", onPress: () => handleTransactionRemove(id) 
+            },
+            {
+                text: "Não", style: "cancel"
+            }
+        ]);
+    }
+
   useFocusEffect(
     useCallback(() => {
       fetchData();
@@ -101,6 +111,7 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
 
   return (
     <View style={{ flex: 1, marginTop: 24, padding: 18 }}>
+      <StatusBar barStyle="dark-content" />
       <PageHeader 
         title={details.name}
         rightButton={{
@@ -113,7 +124,7 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
         <List 
           title="Transações"
           data={transactions}
-          renderItem={({ item }) => <Transaction data={item} onRemove={() => {}} />}
+          renderItem={({ item }) => <Transaction data={item} onRemove={() => transactionRemove(item.id)} />}
           keyExtractor={(item) => item.id}
           emptyMessage="Nenhuma transação cadastrada. Clique em nova transação para cadastrar!"
         />

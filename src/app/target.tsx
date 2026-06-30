@@ -2,7 +2,7 @@ import { Input } from "@/components/Input";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/Button";
 import { router, useLocalSearchParams } from "expo-router";
-import { View, Text, Alert } from "react-native";
+import { View, Text, Alert, StatusBar } from "react-native";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { useEffect, useState } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
@@ -99,6 +99,7 @@ export default function Target() {
 
     return (
         <View style={{ flex: 1, padding: 24}}>
+            <StatusBar barStyle="dark-content" />
             <PageHeader 
                 title="Meta" 
                 subtitle="Economize para alcançar a sua meta financeira."

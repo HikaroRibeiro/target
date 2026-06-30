@@ -51,6 +51,24 @@ export function useTargetDatabase() {
 
     }
 
+        function listByClosestTarget() {
+        return database.getAllAsync<TargetResponse>(`
+            SELECT 
+                targets.id, 
+                targets.name, 
+                targets.amount,
+                COALESCE(SUM(transactions.amount), 0) as current,
+                COALESCE((SUM(transactions.amount) / targets.amount) * 100, 0) as percentage,
+                targets.created_at,
+                targets.updated_at
+            FROM targets
+            LEFT JOIN transactions ON targets.id = transactions.target_id
+            GROUP BY targets.id, targets.name, targets.amount
+            ORDER BY percentage DESC
+            `);
+
+    }
+
     function getTargetById(id: number) {
         return database.getFirstSync<TargetResponse>(`
             SELECT 
@@ -91,6 +109,7 @@ export function useTargetDatabase() {
         listBySavedValue,
         getTargetById,
         update,
-        remove
+        remove,
+        listByClosestTarget
     }
 }

@@ -46,8 +46,24 @@ export function useTransactionsDatabase() {
         `);
     }
 
+    async function remove(id: number) {
+        await database.runAsync("DELETE FROM transactions WHERE id = ?", [id]);
+    }
+
+    async function summary() {
+        return await database.getFirstAsync(`
+            SELECT
+                COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) as input,
+                COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) as output
+            FROM transactions
+            `);
+        
+    }
+
     return {
         create,
-        listByTargetId
+        listByTargetId,
+        remove,
+        summary
     }
 }
